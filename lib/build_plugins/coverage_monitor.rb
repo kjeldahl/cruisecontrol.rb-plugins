@@ -43,7 +43,7 @@ class CoverageMonitor
       </style>
       </head>
       <body>
-      <table border=\"1\" cellpadding=\"10\">
+      <table cellpadding=\"10\">
         <tr class='dark'><th>&nbsp;</th><th>This build</th><th>Last build</th><th>Change</th></tr>
         <tr class='light'><td>Total coverage</td><td>#{this_build_coverage[0]}%</td><td>#{last_build_coverage[0]}%</td><td>#{changes[0]}%</td></tr>
         <tr class='dark'><td>Code coverage</td><td>#{this_build_coverage[1]}%</td><td>#{last_build_coverage[1]}%</td><td>#{changes[1]}%</td></tr>
