@@ -1,0 +1,3 @@
+A plugin for Cruisecontrol.rb to export a summery of changes to codecoverage.
+
+Install by dropping it in lib/builder_plugins in cruisecontrol.rb
