@@ -60,7 +60,9 @@ class CoverageMonitor
   end
   
   def last_successfull_build
-    @project.builds.reverse.find{|b| b.successful?}
+    builds = @project.builds
+    builds.pop
+    builds.reverse.find{|b| b.successful?}
   end
   
   def coverage_for_build(build)
