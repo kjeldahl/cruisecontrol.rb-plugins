@@ -45,14 +45,18 @@ class CoverageMonitor
       <body>
       <table cellpadding=\"10\">
         <tr class='dark'><th>&nbsp;</th><th>This build</th><th>Last build</th><th>Change</th></tr>
-        <tr class='light'><td>Total coverage</td><td>#{this_build_coverage[0]}%</td><td>#{last_build_coverage[0]}%</td><td>#{changes[0]}%</td></tr>
-        <tr class='dark'><td>Code coverage</td><td>#{this_build_coverage[1]}%</td><td>#{last_build_coverage[1]}%</td><td>#{changes[1]}%</td></tr>
-        <tr class='light'><td>Total lines</td><td>#{this_build_coverage[2].to_i}</td><td>#{last_build_coverage[2].to_i}</td><td>#{changes[2].to_i}</td></tr>
-        <tr class='dark'><td>Code lines</td><td>#{this_build_coverage[3].to_i}</td><td>#{last_build_coverage[3].to_i}</td><td>#{changes[3].to_i}</td></tr>
+        <tr class='light'><td>Total coverage</td><td>#{this_build_coverage[0]}%</td><td>#{last_build_coverage[0]}%</td><td>#{formatted(changes[0])}%</td></tr>
+        <tr class='dark'><td>Code coverage</td><td>#{this_build_coverage[1]}%</td><td>#{last_build_coverage[1]}%</td><td>#{formatted(changes[1])}%</td></tr>
+        <tr class='light'><td>Total lines</td><td>#{this_build_coverage[2].to_i}</td><td>#{last_build_coverage[2].to_i}</td><td>#{formatted(changes[2],0)}</td></tr>
+        <tr class='dark'><td>Code lines</td><td>#{this_build_coverage[3].to_i}</td><td>#{last_build_coverage[3].to_i}</td><td>#{formatted(changes[3],0)}</td></tr>
       </table>
       </body>
       </html>")
     end
+  end
+  
+  def formatted(value, decimals=2)
+    format('%+0.*f', decimals, value)
   end
   
   def last_successfull_build
