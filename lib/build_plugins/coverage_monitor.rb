@@ -13,7 +13,7 @@ class CoverageMonitor
   end
 
   def build_finished(build)
-    if build.successful?
+    if build.successful? && has_coverage?(build)
       successfull_build = last_successfull_build
       if successfull_build
         write_output(coverage_for_build(build), coverage_for_build(successfull_build), build)
@@ -63,6 +63,10 @@ class CoverageMonitor
     builds = @project.builds
     builds.pop
     builds.reverse.find{|b| b.successful?}
+  end
+  
+  def has_coverage?(build)
+    File.exists?(build.artifact(CoverageMonitor.coverage_file))
   end
   
   def coverage_for_build(build)
