@@ -66,12 +66,14 @@ module StatisticianGraph
     return stat.values_at(*fields).map { |values| values ? values['codelines'] : 0 }.sum
   end
 
+  def fetch_field(stat, fields, field)
+    return stat.values_at(*fields).map { |values| values ? values[field] : 0 }.sum
+  end
+
   ALL_TESTS = %w(Controller\ specs Helper\ specs Model\ specs View\ specs Library\ specs Unit\ tests Functional\ tests)
   ALL_CODE = %w(Libraries Helpers Controllers Models)
 
-  def gnu_plot_stats(build, project, name, signals = {})
-    signals = { 'Code' => ALL_CODE,
-                'Test' => ALL_TESTS }.merge(signals)
+  def gnu_plot_stats(build, project, name, title, signals, logscale = false)
     output_file = build.artifact("stats/#{name}.jpeg")
     #  drastically prevent false positives in manual tests
     File.unlink(output_file) if File.exist?(output_file)
@@ -83,10 +85,10 @@ module StatisticianGraph
         plot.key 'outside title "   Code Lines   "'
         plot.grid 'ytics'
         plot.timefmt timefmt.inspect # for quote marks
-        plot.term 'jpeg small size 800,400'
+        plot.term 'jpeg small size 800,300'
         plot.output output_file
-        plot.title name
-        plot.logscale 'y'
+        plot.title title
+        plot.logscale 'y' if logscale
         stats = get_stats(project)
         #  set the time range
         timestamps = stats.map(&:first)
@@ -118,16 +120,18 @@ module StatisticianGraph
           }
         end
 
-          #  set the chart height
-        next_order_of_magnitude = 10 ** (Math.log10(maxi) + 1.1).to_i
-        plot.set 'yrange', "[0.01:#{next_order_of_magnitude}]"
+        #  set the chart height
+        if logscale
+          next_order_of_magnitude = 10 ** (Math.log10(maxi) + 1.1).to_i
+          plot.set 'yrange', "[0.01:#{next_order_of_magnitude}]"
+        end
       end
     end  #  this 'end' writes the output file
 
     # Append graph to stats index file
     index_file = build.artifact("stats/index.html")
     File.open(index_file, 'a') do |f|
-      f.puts "<div><img src='#{name}.jpeg' width='800' height='400' /></div>\n"
+      f.puts "<div><img src='#{name}.jpeg' width='800' height='300' /></div>\n"
     end
   end
 end
@@ -147,12 +151,53 @@ class Statistician
     run_in_here = @project.path + '/work'
     FileUtils.cd(run_in_here) { append_stats(@project) }
 
-    name = 'loc_to_lot'
-    gnu_plot_stats build, @project, name,
+    name = "loc_to_lot"
+    title = "rake stats: lines of code to lines of test"
+    gnu_plot_stats build, @project, name, title,
+      {
+        'Test:Code' => lambda { |stats|
+          test = fetch_codelines(stats, ALL_TESTS)
+          code = fetch_codelines(stats, ALL_CODE)
+          return test.to_f / code.to_f
+        },
+        'Code' => ALL_CODE,
+        'Test' => ALL_TESTS
+      }, true
+
+    name = "test_coverage"
+    title = "rake stats: code to test ratio"
+    gnu_plot_stats build, @project, name, title, {
       'Test:Code' => lambda { |stats|
-      test = fetch_codelines(stats, ALL_TESTS)
-      code = fetch_codelines(stats, ALL_CODE)
-      return test.to_f / code.to_f
+        test = fetch_codelines(stats, ALL_TESTS)
+        code = fetch_codelines(stats, ALL_CODE)
+        return test.to_f / code.to_f
+      }
+    }
+
+    name = "code_size"
+    title = "rake stats: tracking code size"
+    gnu_plot_stats build, @project, name, title, {
+      '100-LOC' => lambda { |stats|
+        code = fetch_codelines(stats, ALL_CODE)
+        return code.to_f / 100.0
+      },
+      'Classes' => lambda { |stats|
+        fetch_field(stats, ALL_CODE, 'classes')
+      },
+      'Methods' => lambda { |stats|
+        fetch_field(stats, ALL_CODE, 'methods')
+      }
+    }
+
+    name = "code_complexity"
+    title = "rake stats: tracking code complexity"
+    gnu_plot_stats build, @project, name, title, {
+      'M/C' => lambda { |stats|
+        fetch_field(stats, ALL_CODE, 'methods').to_f / fetch_field(stats, ALL_CODE, 'classes')
+      },
+      'LOC/M' => lambda { |stats|
+        fetch_codelines(stats, ALL_CODE).to_f / fetch_field(stats, ALL_CODE, 'methods')
+      }
     }
   end
 
