@@ -1,3 +1,24 @@
+Installation:
+
+Install a plugin by dropping it in lib/builder_plugins in cruisecontrol.rb
+
+
+coverage_monitor.rb:
 A plugin for Cruisecontrol.rb to export a summery of changes to codecoverage.
 
-Install by dropping it in lib/builder_plugins in cruisecontrol.rb
+
+statistican.rb:
+A plugin to generate a simple graph from rake stats
+
+Requirements:
+gnuplot command line utility (http://www.gnuplot.info/)
+
+  sudo port install gnuplot
+
+or
+
+  sudo apt-get install gnuplot
+
+and gnuplot gem
+
+  sudo gem install gnuplot
