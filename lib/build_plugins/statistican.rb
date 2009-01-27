@@ -130,6 +130,7 @@ module StatisticianGraph
 
     # Append graph to stats index file
     index_file = build.artifact("stats/index.html")
+    FileUtils.mkdir(File.dirname(index_file)) unless File.directory?(File.dirname(index_file))
     File.open(index_file, 'a') do |f|
       f.puts "<div><img src='#{name}.jpeg' width='800' height='300' /></div>\n"
     end
